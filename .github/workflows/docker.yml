@@ -15,7 +15,7 @@ jobs:
         id: docker_meta
         uses: crazy-max/ghaction-docker-meta@v1
         with:
-          images: Lutherwaves/stable-diffusion
+          images: lutherwaves/stable-diffusion
           tag-semver: |
             {{version}}
             {{major}}.{{minor}}
