@@ -1,3 +1,7 @@
+# Original work Copyright (c) 2022 Amith K K
+# Modified work Copyright (c) 2025 Martin Yankov
+#
+# Licensed under MIT License
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -39,19 +43,19 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
-        - name: ensure-stable-models
-          image: busybox:1.35
-          command: ["/bin/sh"]
-          args:
-            - -c
-            - >-
-                wget -nc {{ .Values.models.sd14 }} -O /models/model.ckpt;
-                wget -nc {{ .Values.models.gfpGan13 }} -P /models;
-                wget -nc {{ .Values.models.realEsrGanx4p10 }} -P /models;
-                wget -nc {{ .Values.models.realEsrGanx4Animep02 }} -P /models
-          volumeMounts:
-            - mountPath: /models
-              name: {{ include "stable-diffusion.fullname" . }}-model-store
+      - name: ensure-stable-models
+        image: curlimages/curl:8.2.1
+        command: ["/bin/sh"]
+        args:
+        - -c
+        - >-
+          curl -L -o /models/model.ckpt {{ .Values.models.sd14 }} &&
+          curl -L -o /models/$(basename {{ .Values.models.gfpGan13 }}) {{ .Values.models.gfpGan13 }} &&
+          curl -L -o /models/$(basename {{ .Values.models.realEsrGanx4p10 }}) {{ .Values.models.realEsrGanx4p10 }} &&
+          curl -L -o /models/$(basename {{ .Values.models.realEsrGanx4Animep02 }}) {{ .Values.models.realEsrGanx4Animep02 }}
+        volumeMounts:
+        - mountPath: /models
+          name: {{ include "stable-diffusion.fullname" . }}-model-store
       containers:
         - name: {{ .Chart.Name }}-stable-diffusion
           securityContext:
